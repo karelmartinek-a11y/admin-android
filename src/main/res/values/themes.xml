@@ -1,0 +1,11 @@
+<resources>
+    <style name="Theme.AdminHCASC" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
+    <style name="Theme.AdminHCASC.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#111827</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_adminhcasc_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.AdminHCASC</item>
+    </style>
+</resources>
