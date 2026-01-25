@@ -67,8 +67,8 @@ jobs:
       - name: Upload APK to server
         run: |
           test -f adminhcasc/build/outputs/apk/release/adminhcasc-release.apk
-          sshpass -p "${DEPLOY_PASS}" scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null adminhcasc/build/outputs/apk/release/adminhcasc-release.apk ${DEPLOY_USER}@${DEPLOY_HOST}:/tmp/adminhcasc-release.apk
-          sshpass -p "${DEPLOY_PASS}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${DEPLOY_USER}@${DEPLOY_HOST} "ls -l /tmp/adminhcasc-release.apk"
+          sshpass -p "${DEPLOY_PASS}" scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null adminhcasc/build/outputs/apk/release/adminhcasc-release.apk ${DEPLOY_USER}@${DEPLOY_HOST}:~/adminhcasc-release.apk
+          sshpass -p "${DEPLOY_PASS}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${DEPLOY_USER}@${DEPLOY_HOST} "ls -l ~/adminhcasc-release.apk"
         env:
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
@@ -81,12 +81,13 @@ jobs:
           password: ${{ secrets.DEPLOY_PASS }}
           script: |
             set -e
-            ls -l /tmp/*.apk || true
+            ls -l ~/*.apk || true
+            test -f ~/adminhcasc-release.apk
             install -d /var/www/hotelapp/download /var/www/dagmar/download
-            mv /tmp/adminhcasc-release.apk /tmp/admin.apk
-            cp /tmp/admin.apk /var/www/hotelapp/download/admin.apk
+            cp ~/adminhcasc-release.apk /var/www/hotelapp/download/admin.apk
             cp /var/www/hotelapp/download/admin.apk /var/www/hotelapp/download/adminhcasc.apk
             chown hotelapp:hotelapp /var/www/hotelapp/download/admin.apk /var/www/hotelapp/download/adminhcasc.apk
-            cp /tmp/admin.apk /var/www/dagmar/download/admin.apk
+            cp ~/adminhcasc-release.apk /var/www/dagmar/download/admin.apk
             cp /var/www/dagmar/download/admin.apk /var/www/dagmar/download/adminhcasc.apk
             chown www-data:www-data /var/www/dagmar/download/admin.apk /var/www/dagmar/download/adminhcasc.apk
+            rm -f ~/adminhcasc-release.apk
