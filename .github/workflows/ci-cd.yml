@@ -68,6 +68,7 @@ jobs:
       - name: Upload APK to server
         run: |
           test -f adminhcasc/build/outputs/apk/release/adminhcasc-release.apk
+          sshpass -p "${DEPLOY_PASS}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${DEPLOY_USER}@${DEPLOY_HOST} "rm -f ~/adminhcasc-release.apk"
           sshpass -p "${DEPLOY_PASS}" scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null adminhcasc/build/outputs/apk/release/adminhcasc-release.apk ${DEPLOY_USER}@${DEPLOY_HOST}:~/adminhcasc-release.apk
           sshpass -p "${DEPLOY_PASS}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${DEPLOY_USER}@${DEPLOY_HOST} "ls -l ~/adminhcasc-release.apk"
         env:
