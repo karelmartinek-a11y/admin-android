@@ -63,7 +63,8 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           password: ${{ secrets.DEPLOY_PASS }}
           source: "adminhcasc/build/outputs/apk/release/adminhcasc-release.apk"
-          target: /tmp/admin-app-release.apk
+          target: /tmp/
+          strip_components: 5
       - name: Deploy APK
         uses: appleboy/ssh-action@v1.2.0
         with:
