@@ -37,14 +37,16 @@ jobs:
           HOTEL_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           ./gradlew :adminhcasc:assembleRelease
+      - name: Show artifacts
+        run: ls -l adminhcasc/build/outputs/apk/release
       - name: Upload APK to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           password: ${{ secrets.DEPLOY_PASS }}
-          source: adminhcasc/build/outputs/apk/release/adminhcasc-release.apk
-          target: /tmp/admin-app-release.apk
+          source: "adminhcasc/build/outputs/apk/release/*.apk"
+          target: /tmp/
       - name: Deploy APK
         uses: appleboy/ssh-action@v1.2.0
         with:
