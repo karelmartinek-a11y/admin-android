@@ -1,0 +1,56 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: |-
+            platform-tools
+            platforms;android-34
+            build-tools;34.0.0
+      - name: Prepare keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_B64 }}" | base64 -d > /tmp/keystore.jks
+      - name: Assemble release
+        env:
+          HOTEL_STORE_FILE: /tmp/keystore.jks
+          HOTEL_STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          HOTEL_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          HOTEL_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          ./gradlew :adminhcasc:assembleRelease
+      - name: Upload APK to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          password: ${{ secrets.DEPLOY_PASS }}
+          source: adminhcasc/build/outputs/apk/release/adminhcasc-release.apk
+          target: /tmp/admin-app-release.apk
+      - name: Deploy APK
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          password: ${{ secrets.DEPLOY_PASS }}
+          script: |
+            set -e
+            install -d /var/www/hotelapp/download /var/www/dagmar/download
+            mv /tmp/admin-app-release.apk /tmp/admin.apk
+            cp /tmp/admin.apk /var/www/hotelapp/download/admin.apk
+            cp /var/www/hotelapp/download/admin.apk /var/www/hotelapp/download/adminhcasc.apk
+            chown hotelapp:hotelapp /var/www/hotelapp/download/admin.apk /var/www/hotelapp/download/adminhcasc.apk
+            cp /tmp/admin.apk /var/www/dagmar/download/admin.apk
+            cp /var/www/dagmar/download/admin.apk /var/www/dagmar/download/adminhcasc.apk
+            chown www-data:www-data /var/www/dagmar/download/admin.apk /var/www/dagmar/download/adminhcasc.apk
