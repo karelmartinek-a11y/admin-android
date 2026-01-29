@@ -70,9 +70,12 @@ jobs:
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
-          password: ${{ secrets.DEPLOY_PASS }}
+            password: ${{ secrets.DEPLOY_PASS }}
           script: |
             set -e
+            if [ -d /tmp/adminhcasc-release.apk ]; then
+              mv /tmp/adminhcasc-release.apk/adminhcasc-release.apk /tmp/adminhcasc-release.apk && rmdir /tmp/adminhcasc-release.apk || true
+            fi
             test -f /tmp/adminhcasc-release.apk
             install -d /var/www/hotelapp/download /var/www/dagmar/download
             install -m 0644 /tmp/adminhcasc-release.apk /var/www/hotelapp/download/AdminApp.apk
