@@ -74,17 +74,18 @@ jobs:
           password: ${{ secrets.DEPLOY_PASS }}
           script: |
             set -e
-            if [ -d /tmp/adminhcasc-release.apk ]; then
-              mv /tmp/adminhcasc-release.apk/adminhcasc-release.apk /tmp/adminhcasc-release.apk && rmdir /tmp/adminhcasc-release.apk || true
+            SRC=/tmp/adminhcasc-release.apk
+            if [ -d "$SRC" ]; then
+              SRC="$SRC/adminhcasc-release.apk"
             fi
-            test -f /tmp/adminhcasc-release.apk
+            test -f "$SRC"
             install -d /var/www/hotelapp/download /var/www/dagmar/download
-            install -m 0644 /tmp/adminhcasc-release.apk /var/www/hotelapp/download/AdminApp.apk
+            install -m 0644 "$SRC" /var/www/hotelapp/download/AdminApp.apk
             cp /var/www/hotelapp/download/AdminApp.apk /var/www/hotelapp/download/adminhcasc.apk
             cp /var/www/hotelapp/download/AdminApp.apk /var/www/hotelapp/download/admin.apk
             chown hotelapp:hotelapp /var/www/hotelapp/download/AdminApp.apk /var/www/hotelapp/download/adminhcasc.apk /var/www/hotelapp/download/admin.apk
-            install -m 0644 /tmp/adminhcasc-release.apk /var/www/dagmar/download/AdminApp.apk
+            install -m 0644 "$SRC" /var/www/dagmar/download/AdminApp.apk
             cp /var/www/dagmar/download/AdminApp.apk /var/www/dagmar/download/adminhcasc.apk
             cp /var/www/dagmar/download/AdminApp.apk /var/www/dagmar/download/admin.apk
             chown www-data:www-data /var/www/dagmar/download/AdminApp.apk /var/www/dagmar/download/adminhcasc.apk /var/www/dagmar/download/admin.apk
-            rm -f /tmp/adminhcasc-release.apk
+            rm -f "$SRC"
