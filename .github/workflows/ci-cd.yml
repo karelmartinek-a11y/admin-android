@@ -3,6 +3,7 @@ name: CI/CD
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -56,18 +57,14 @@ jobs:
           fi
       - name: Show artifacts
         run: ls -l adminhcasc/build/outputs/apk/release
-      - name: Install sshpass
-        run: sudo apt-get update && sudo apt-get install -y sshpass
       - name: Upload APK to server
-        run: |
-          test -f adminhcasc/build/outputs/apk/release/adminhcasc-release.apk
-          sshpass -p "${DEPLOY_PASS}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${DEPLOY_USER}@${DEPLOY_HOST} "rm -f ~/adminhcasc-release.apk"
-          sshpass -p "${DEPLOY_PASS}" scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null adminhcasc/build/outputs/apk/release/adminhcasc-release.apk ${DEPLOY_USER}@${DEPLOY_HOST}:~/adminhcasc-release.apk
-          sshpass -p "${DEPLOY_PASS}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${DEPLOY_USER}@${DEPLOY_HOST} "ls -l ~/adminhcasc-release.apk"
-        env:
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_PASS: ${{ secrets.DEPLOY_PASS }}
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          password: ${{ secrets.DEPLOY_PASS }}
+          source: adminhcasc/build/outputs/apk/release/adminhcasc-release.apk
+          target: /tmp/upload-admin/
       - name: Deploy APK
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -76,13 +73,14 @@ jobs:
           password: ${{ secrets.DEPLOY_PASS }}
           script: |
             set -e
-            ls -l ~/*.apk || true
-            test -f ~/adminhcasc-release.apk
+            test -f /tmp/upload-admin/adminhcasc-release.apk
             install -d /var/www/hotelapp/download /var/www/dagmar/download
-            cp ~/adminhcasc-release.apk /var/www/hotelapp/download/admin.apk
-            cp /var/www/hotelapp/download/admin.apk /var/www/hotelapp/download/adminhcasc.apk
-            chown hotelapp:hotelapp /var/www/hotelapp/download/admin.apk /var/www/hotelapp/download/adminhcasc.apk
-            cp ~/adminhcasc-release.apk /var/www/dagmar/download/admin.apk
-            cp /var/www/dagmar/download/admin.apk /var/www/dagmar/download/adminhcasc.apk
-            chown www-data:www-data /var/www/dagmar/download/admin.apk /var/www/dagmar/download/adminhcasc.apk
-            rm -f ~/adminhcasc-release.apk
+            install -m 0644 /tmp/upload-admin/adminhcasc-release.apk /var/www/hotelapp/download/AdminApp.apk
+            cp /var/www/hotelapp/download/AdminApp.apk /var/www/hotelapp/download/adminhcasc.apk
+            cp /var/www/hotelapp/download/AdminApp.apk /var/www/hotelapp/download/admin.apk
+            chown hotelapp:hotelapp /var/www/hotelapp/download/AdminApp.apk /var/www/hotelapp/download/adminhcasc.apk /var/www/hotelapp/download/admin.apk
+            install -m 0644 /tmp/upload-admin/adminhcasc-release.apk /var/www/dagmar/download/AdminApp.apk
+            cp /var/www/dagmar/download/AdminApp.apk /var/www/dagmar/download/adminhcasc.apk
+            cp /var/www/dagmar/download/AdminApp.apk /var/www/dagmar/download/admin.apk
+            chown www-data:www-data /var/www/dagmar/download/AdminApp.apk /var/www/dagmar/download/adminhcasc.apk /var/www/dagmar/download/admin.apk
+            rm -rf /tmp/upload-admin
