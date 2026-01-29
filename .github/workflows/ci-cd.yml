@@ -76,7 +76,7 @@ jobs:
             set -e
             SRC=/tmp/adminhcasc-release.apk
             if [ -d "$SRC" ]; then
-              SRC="$SRC/adminhcasc-release.apk"
+              SRC=$(find "$SRC" -type f -name '*.apk' | head -n 1)
             fi
             test -f "$SRC"
             install -d /var/www/hotelapp/download /var/www/dagmar/download
@@ -89,3 +89,4 @@ jobs:
             cp /var/www/dagmar/download/AdminApp.apk /var/www/dagmar/download/admin.apk
             chown www-data:www-data /var/www/dagmar/download/AdminApp.apk /var/www/dagmar/download/adminhcasc.apk /var/www/dagmar/download/admin.apk
             rm -f "$SRC"
+            rm -rf /tmp/adminhcasc-release.apk
